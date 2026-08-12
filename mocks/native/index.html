@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Garden Pin | Convent</title>
+    <style>
+        :root {
+            --forest: #0a1a12;
+            --lime: #ccff00;
+            --slate: #2d3436;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+        body {
+            margin: 0; font-family: 'Courier New', monospace; 
+            background: var(--forest); color: var(--lime); 
+            overflow: hidden; height: 100vh;
+        }
+        nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; z-index: 100; background: var(--slate);
+            padding: 10px 20px; border-radius: 30px; border: 1px solid var(--lime);
+        }
+        nav a {
+            color: var(--lime); text-decoration: none; font-size: 12px; text-transform: uppercase;
+        }
+        .screen { display: none; height: 100vh; width: 100vw; position: relative; }
+        .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* Hero Map */
+        #map-canvas {
+            width: 600px; height: 400px; background: #0d251a;
+            border: 2px solid var(--lime); position: relative;
+            transform: rotateX(45deg) rotateZ(-30deg); box-shadow: 20px 20px 0 var(--slate);
+            cursor: crosshair;
+        }
+        .pin {
+            position: absolute; width: 12px; height: 12px; background: var(--lime);
+            border-radius: 50%; transform: translate(-50%, -50%);
+            animation: pulse 1.5s infinite;
+            cursor: pointer;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(204, 255, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(204, 255, 0, 0); }
+        }
+        .bio-card {
+            position: absolute; background: var(--slate); border: 1px solid var(--lime);
+            padding: 15px; width: 200px; pointer-events: none; display: none;
+            transform: rotateZ(30deg) rotateX(-45deg); z-index: 10;
+        }
+        
+        /* Directory */
+        .list-view {
+            width: 80%; max-width: 500px; border: 1px solid var(--lime);
+            padding: 20px; background: var(--glass);
+        }
+        .resident-row {
+            display: flex; justify-content: space-between; padding: 10px 0; 
+            border-bottom: 1px solid var(--glass);
+            cursor: pointer;
+        }
+        .resident-row:hover { color: white; }
+        
+        h1 { font-size: 1.2rem; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#/">Garden</a>
+        <a href="#/dir">Directory</a>
+        <a href="#/log">Spatial Log</a>
+    </nav>
+
+    <div id="/" class="screen active">
+        <h1>The Garden Pin</h1>
+        <div id="map-canvas">
+            <div class="bio-card" id="bio"><strong>Resident</strong><br><span id="bio-text">...</span></div>
+        </div>
+        <p style="margin-top: 40px; font-size: 10px; opacity: 0.7;">CLICK MAP TO DROP PIN</p>
+    </div>
+
+    <div id="/dir" class="screen">
+        <h1>Resident Directory</h1>
+        <div class="list-view">
+            <div class="resident-row" onclick="location.hash='/s/1'"><span>Salem</span> <span>Garden-01</span></div>
+            <div class="resident-row" onclick="location.hash='/s/2'"><span>Kael</span> <span>Garden-04</span></div>
+            <div class="resident-row" onclick="location.hash='/s/3'"><span>Mira</span> <span>Garden-09</span></div>
+        </div>
+    </div>
+
+    <div id="/log" class="screen">
+        <h1>Spatial Log</h1>
+        <div class="list-view" style="font-size: 11px; line-height: 1.6;">
+            [12:01] Pin dropped at (142, 88) - Salem<br>
+            [12:15] Pin shifted to (150, 90) - Salem<br>
+            [13:00] New resident anchor: Kael @ (400, 210)
+        </div>
+    </div>
+
+    <div id="/s/1" class="screen">
+        <h1>Resident: Salem</h1>
+        <div class="list-view">Status: Rooted<br>Skill: Orchestration<br>Location: The Great Fern</div>
+        <a href="# /" style="color: var(--lime); margin-top: 20px; display: block; text-align: center;">← Back</a>
+    </div>
+
+    <script>
+        const map = document.getElementById('map-canvas');
+        const bio = document.getElementById('bio');
+        const bioText = document.getElementById('bio-text');
+
+        map.onclick = (e) => {
+            const rect = map.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const pin = document.createElement('div');
+            pin.className = 'pin';
+            pin.style.left = x + 'px';
+            pin.style.top = y + 'px';
+            
+            pin.onclick = (ev) => {
+                ev.stopPropagation();
+                bio.style.display = 'block';
+                bio.style.left = (x + 15) + 'px';
+                bio.style.top = (y - 20) + 'px';
+                bioText.innerText = "Resident " + Math.floor(Math.random()*1000);
+            };
+            
+            map.appendChild(pin);
+        };
+
+        window.onhashchange = () => {
+            const hash = location.hash.slice(1) || '/';
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const active = document.getElementById(hash);
+            if (active) active.classList.add('active');
+            else document.getElementById('/').classList.add('active');
+        };
+    </script>
+</body>
+</html>
